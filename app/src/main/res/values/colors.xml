@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#48b7aa</color>
+    <color name="colorPrimaryDark">#48b7aa</color>
+    <color name="dialogColor">#69ded0</color>
+    <color name="dialogTitleColor">#2aefd8</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="color_bar_bg">#ececec</color>
+    <color name="Bg_Calendar_ListView_Header">#e9e9e9</color>
+    <color name="color_weekbutton">#38ffffff</color>
+    <color name="orange_light">#ffffbb33</color>
+    <color name="color_add_bg">#f0eded</color>
+    <color name="color_text">#616161</color>
+</resources>

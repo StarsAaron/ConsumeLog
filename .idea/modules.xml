@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ConsumeLog.iml" filepath="$PROJECT_DIR$/ConsumeLog.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/calendarlistlibrary/calendarlistlibrary.iml" filepath="$PROJECT_DIR$/calendarlistlibrary/calendarlistlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lfilepickerlibrary/lfilepickerlibrary.iml" filepath="$PROJECT_DIR$/lfilepickerlibrary/lfilepickerlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nicedialog/nicedialog.iml" filepath="$PROJECT_DIR$/nicedialog/nicedialog.iml" />
+    </modules>
+  </component>
+</project>

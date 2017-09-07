@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+
+def releaseTime() {
+    return new Date().format("yyyy_MM_dd", TimeZone.getTimeZone("UTC"))
+}
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
+    defaultConfig {
+        applicationId "com.rujian.consumemanager"
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName "2.0"
+    }
+    buildTypes {
+        release {
+            // 不显示Log
+            buildConfigField "boolean", "LOG_DEBUG", "false"//混淆
+            minifyEnabled true //开启混淆
+            zipAlignEnabled true //Zipalign优化
+            shrinkResources true // 移除无用的resource文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def outputFile = output.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                        def fileName = "ConsumeManager_${variant.flavorName}_v${variant.versionName}_${releaseTime()}.apk"
+                        output.outputFile = new File(outputFile.parent, fileName)
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile('cn.qqtheme.framework:WheelPicker:1.5.4') {
+        exclude group: 'com.android.support'
+    }
+    compile project(':calendarlistlibrary')
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support:design:26.+'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.jakewharton:butterknife:5.1.1'
+    compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
+    compile 'com.android.support:cardview-v7:26.0.0-alpha1'
+    compile project(':nicedialog')
+    compile project(':lfilepickerlibrary')
+}
