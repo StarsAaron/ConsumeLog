@@ -51,15 +51,16 @@
                 android:layout_height="match_parent"
                 android:visibility="visible">
 
-                <Button
+                <ImageView
                     android:id="@+id/btn_pre_week"
                     android:layout_width="30dp"
-                    android:layout_height="48dp"
+                    android:layout_height="60dp"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="false"
                     android:layout_centerVertical="true"
                     android:alpha="0.5"
-                    android:background="@mipmap/ic_pre"/>
+                    android:padding="5dp"
+                    android:src="@mipmap/ic_pre"/>
 
                 <TextView
                     android:id="@+id/tv_null"
@@ -72,14 +73,15 @@
                     android:textSize="20sp"
                     android:visibility="gone"/>
 
-                <Button
+                <ImageView
                     android:id="@+id/btn_next_week"
                     android:layout_width="30dp"
-                    android:layout_height="48dp"
+                    android:layout_height="60dp"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
                     android:alpha="0.5"
-                    android:background="@mipmap/ic_next"/>
+                    android:padding="5dp"
+                    android:src="@mipmap/ic_next"/>
             </RelativeLayout>
 
             <android.support.v7.widget.Toolbar

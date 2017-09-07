@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
     @InjectView(R.id.columnChartView)
     ColumnChartView columnChartView;
     @InjectView(R.id.btn_pre_week)
-    Button btnPreWeek;
+    ImageView btnPreWeek;
     @InjectView(R.id.btn_next_week)
-    Button btnNextWeek;
+    ImageView btnNextWeek;
     @InjectView(R.id.pieChartView)
     PieChartView pieChartView;
     @InjectView(R.id.tv_null)
