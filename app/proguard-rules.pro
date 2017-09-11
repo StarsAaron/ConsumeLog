@@ -30,6 +30,14 @@
 -keep public class * extends android.support.v4.**
 #如果引用了v4或者v7包，可以忽略警告，因为用不到android.support
 -dontwarn android.support.**
+
+-keep class android.support.v7.** { *; }
+-keep public class * extends android.support.v7.**
+-keep class android.support:design.** { *; }
+-keep public class * extends android.support:design.**
+-keep class android.support:cardview-v7.** { *; }
+-keep public class * extends android.support:cardview-v7.**
+
 #忽略警告
 -ignorewarning
 
@@ -49,6 +57,3 @@
 -keepnames class * implements java.io.Serializable
 
 ##### 以下自定义 #################################################################
-
-###--------------umeng 相关的混淆配置-----------
--keep class com.umeng.** { *; }

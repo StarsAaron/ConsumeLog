@@ -11,7 +11,7 @@ android {
         applicationId "com.rujian.consumemanager"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 1
+        versionCode 2
         versionName "2.0"
     }
     buildTypes {
@@ -19,8 +19,6 @@ android {
             // 不显示Log
             buildConfigField "boolean", "LOG_DEBUG", "false"//混淆
             minifyEnabled true //开启混淆
-            zipAlignEnabled true //Zipalign优化
-            shrinkResources true // 移除无用的resource文件
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
             applicationVariants.all { variant ->
@@ -33,6 +31,17 @@ android {
                 }
             }
         }
+        debug{
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            minifyEnabled false //开启混淆
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        disable 'InvalidPackage'
+        //app_name" is not translated in "zh" 只要添加下面这一句就可以了
+        disable 'MissingTranslation'
     }
 }
 

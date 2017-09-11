@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 26
     buildToolsVersion "26.0.1"
 
     defaultConfig {
@@ -20,6 +20,9 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:recyclerview-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:26+'
+    compile 'com.android.support:recyclerview-v7:26+'
+    //权限注解
+    compile 'com.github.jokermonn:permissions4m:2.1.0-lib'
+    annotationProcessor 'com.github.jokermonn:permissions4m:2.1.0-processor'
 }

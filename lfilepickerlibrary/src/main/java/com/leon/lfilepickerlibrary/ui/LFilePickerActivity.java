@@ -1,23 +1,26 @@
 package com.leon.lfilepickerlibrary.ui;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.leon.lfilepickerlibrary.LFilePicker;
+import com.joker.annotation.PermissionsDenied;
+import com.joker.annotation.PermissionsGranted;
+import com.joker.annotation.PermissionsNonRationale;
+import com.joker.annotation.PermissionsRationale;
 import com.leon.lfilepickerlibrary.R;
 import com.leon.lfilepickerlibrary.adapter.PathAdapter;
 import com.leon.lfilepickerlibrary.filter.LFileFilter;
@@ -32,8 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LFilePickerActivity extends AppCompatActivity {
-
-    private final String TAG = "FilePickerLeon";
+    public static final int  WRITE_EXTERNAL_STORAGE_CODE = 0x123;
     private EmptyRecyclerView mRecylerView;
     private View mEmptyView;
     private TextView mTvPath;
@@ -46,52 +48,107 @@ public class LFilePickerActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private ParamEntity mParamEntity;
     private LFileFilter mFilter;
-    private PermissionHelper mHelper;
+
+    private PermissionHelper permissionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lfile_picker);
         mParamEntity = (ParamEntity) getIntent().getExtras().getSerializable("param");
-        checkPermission();
+        permissionHelper =new PermissionHelper(this);
+        permissionHelper
+                .requestCodes(WRITE_EXTERNAL_STORAGE_CODE)
+                .requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .requestRationaleDialog(true)
+                .requestListener(new PermissionHelper.OnPermissionListener() {
+                    @Override
+                    public void onPermissionGranted() {
+                        initView();
+                        initListener();
+                    }
+
+                    @Override
+                    public void onPermissionDenied(String[] deniedPermissions) {
+                        Toast.makeText(LFilePickerActivity.this,"功能受限，请开启读取存储权限！"
+                                ,Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .require();
     }
 
-    /**
-     * 判断权限
-     * @return
-     */
-    private void checkPermission(){
-        if(Build.VERSION.SDK_INT >=Build.VERSION_CODES.M ){// 判断是否版本大于6.0
-            if(mHelper == null){
-                mHelper = new PermissionHelper(this);
-            }
-            mHelper.requestPermissions("请授予文件读写权限！",
-                    new PermissionHelper.PermissionListener() {
-                        @Override
-                        public void doAfterGrand(String... permission) {
-                            initView();
-                            initListener();
-                        }
-
-                        @Override
-                        public void doAfterDenied(String... permission) {
-                            Toast.makeText(LFilePickerActivity.this,"功能受限，请开启读取存储权限！",Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }else{
-            initView();
-            initListener();
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode
             , @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(mHelper != null){
-            mHelper.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(permissionHelper != null){
+            permissionHelper.onRequestPermissionsResult(requestCode,permissions, grantResults);
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @PermissionsGranted({WRITE_EXTERNAL_STORAGE_CODE})
+    public void syncGranted(int code) {
+        switch (code) {
+            case WRITE_EXTERNAL_STORAGE_CODE:
+                Toast.makeText(LFilePickerActivity.this
+                        ,"权限授权成功 in activity with annotation"
+                        ,Toast.LENGTH_SHORT)
+                        .show();
+                initView();
+                initListener();
+                break;
         }
     }
+
+    @PermissionsDenied({WRITE_EXTERNAL_STORAGE_CODE})
+    public void syncDenied(int code) {
+        switch (code) {
+            case WRITE_EXTERNAL_STORAGE_CODE:
+                Toast.makeText(LFilePickerActivity.this
+                        ,"权限授权失败"
+                        ,Toast.LENGTH_SHORT)
+                        .show();
+                break;
+        }
+    }
+
+    @PermissionsRationale({WRITE_EXTERNAL_STORAGE_CODE})
+    public void syncRationale(int code) {
+        switch (code) {
+            case WRITE_EXTERNAL_STORAGE_CODE:
+                Toast.makeText(LFilePickerActivity.this
+                        ,"请授予权限"
+                        ,Toast.LENGTH_SHORT)
+                        .show();
+                break;
+        }
+    }
+
+    @PermissionsNonRationale({WRITE_EXTERNAL_STORAGE_CODE})
+    public void storageAndCallRationale(int code, final Intent intent) {
+        switch (code) {
+            case WRITE_EXTERNAL_STORAGE_CODE:
+                new AlertDialog.Builder(LFilePickerActivity.this)
+                        .setMessage("我们需要您开启读取内部存储权限")
+                        .setPositiveButton("去开启", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                                finish();
+                            }
+                        })
+                        .show();
+                break;
+        }
+    }
+
 
     /**
      * 更新Toolbar展示
