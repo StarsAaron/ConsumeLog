@@ -7,6 +7,7 @@ import java.util.Date;
  * Created by stars on 2015/7/26.
  */
 public class RecordBean implements Serializable {
+
     public int _id; //ID
     public int _year;//年
     public int _month;//月
@@ -17,4 +18,5 @@ public class RecordBean implements Serializable {
     public String _consumeType;//消费类型（购物，电费，水费，车费，汽油费，医疗，送礼，其他。。。）
     public String _description; //描述
     public Date date;//记录时间
+//    public long _random_tip;//随机生成的唯一标示
 }

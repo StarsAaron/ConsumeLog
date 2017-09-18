@@ -13,7 +13,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,11 +26,10 @@ import com.aaron.consumelog.bean.SumBean;
 import com.aaron.consumelog.db.dao.RecordDao;
 import com.aaron.consumelog.util.DateUtils;
 import com.aaron.consumelog.util.FileUtil;
+import com.customdialoglibrary.CustomDialog;
+import com.customdialoglibrary.ViewHolder;
 import com.leon.lfilepickerlibrary.LFilePicker;
 import com.leon.lfilepickerlibrary.utils.Constant;
-import com.othershe.nicedialog.NiceDialog;
-import com.othershe.nicedialog.ViewConvertListener;
-import com.othershe.nicedialog.ViewHolder;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -58,8 +56,6 @@ import lecho.lib.hellocharts.model.SubcolumnValue;
 import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.PieChartView;
-
-import static android.R.attr.format;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -391,11 +387,11 @@ public class MainActivity extends AppCompatActivity {
                 initView(offset);
                 break;
             case R.id.iv_more://菜单
-                NiceDialog.init()
+                CustomDialog.init(CustomDialog.DialogType.CUSTOM_VIEW_TYPE)
                         .setLayoutId(R.layout.layout_main_menu)
-                        .setConvertListener(new ViewConvertListener() {
+                        .setConvertListener(new CustomDialog.ViewConvertListener() {
                             @Override
-                            public void convertView(ViewHolder holder, final NiceDialog dialog) {
+                            public void convertView(ViewHolder holder, final CustomDialog dialog) {
                                 holder.setOnClickListener(R.id.tv_export, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
@@ -431,30 +427,23 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(View view) {
                                         dialog.dismiss();
-
-                                        NiceDialog.init()
-                                                .setLayoutId(R.layout.confirm_layout)
-                                                .setDimAmount(0.3f)
-                                                .setMargin(60)
-                                                .setOutCancel(false)
-                                                .setConvertListener(new ViewConvertListener() {
+                                        CustomDialog.init()
+                                                .setTitleText("提示")
+                                                .setContentText("确定要清空数据记录吗?")
+                                                .setWidth(-2)
+                                                .setCancelText("取消")
+                                                .setCancelClickListener(new CustomDialog.OnDefaultDialogButtonClickListener() {
                                                     @Override
-                                                    public void convertView(ViewHolder holder, final NiceDialog dialog) {
-                                                        holder.setText(R.id.title, "提示");
-                                                        holder.setText(R.id.message, "确定要清空数据记录吗?");
-                                                        holder.setOnClickListener(R.id.cancel, new View.OnClickListener() {
-                                                            @Override
-                                                            public void onClick(View view) {
-                                                                dialog.dismiss();
-                                                            }
-                                                        });
-                                                        holder.setOnClickListener(R.id.ok, new View.OnClickListener() {
-                                                            @Override
-                                                            public void onClick(View view) {
-                                                                myHandler.sendEmptyMessage(0x100);
-                                                                dialog.dismiss();
-                                                            }
-                                                        });
+                                                    public void onClick(CustomDialog customDialog) {
+                                                        customDialog.dismiss();
+                                                    }
+                                                })
+                                                .setConfirmText("删除")
+                                                .setConfirmClickListener(new CustomDialog.OnDefaultDialogButtonClickListener() {
+                                                    @Override
+                                                    public void onClick(CustomDialog customDialog) {
+                                                        myHandler.sendEmptyMessage(0x100);
+                                                        customDialog.dismiss();
                                                     }
                                                 })
                                                 .show(getSupportFragmentManager());
@@ -468,30 +457,21 @@ public class MainActivity extends AppCompatActivity {
                                         message.append("作者：Aaron\n邮箱：103514303@qq.com\n版本：V");
                                         try {
                                             String version = getPackageManager().getPackageInfo(MainActivity.this.getPackageName(), 0).versionName;
-                                            message.append(version + "\n\n");
+                                            message.append(version);
                                         } catch (PackageManager.NameNotFoundException e) {
                                             e.printStackTrace();
                                         }
 
-                                        NiceDialog.init()
-                                                .setLayoutId(R.layout.confirm_layout)
-                                                .setDimAmount(0.3f)
-                                                .setMargin(60)
-                                                .setOutCancel(true)
-                                                .setConvertListener(new ViewConvertListener() {
-                                                    @Override
-                                                    public void convertView(ViewHolder holder, final NiceDialog dialog) {
-                                                        holder.setText(R.id.title, "关于");
-                                                        holder.setText(R.id.message, message.toString());
-                                                        holder.getView(R.id.line).setVisibility(View.GONE);
-                                                        holder.getView(R.id.ll_bar).setVisibility(View.GONE);
-                                                    }
-                                                })
+                                        CustomDialog.init()
+                                                .setWidth(-2)
+                                                .setTitleText("关于")
+                                                .setContentText(message.toString())
                                                 .show(getSupportFragmentManager());
                                     }
                                 });
                             }
                         })
+                        .setAnimStyle(R.style.MyAnimation)
                         .setShowBottom(true)
                         .show(getSupportFragmentManager());
                 break;
@@ -523,44 +503,45 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (requestCode == REQUEST_FILE_PATH) {//恢复
-                NiceDialog.init()
-                        .setLayoutId(R.layout.confirm_layout)
-                        .setDimAmount(0.3f)
-                        .setMargin(60)
-                        .setOutCancel(true)
-                        .setConvertListener(new ViewConvertListener() {
+                CustomDialog.init()
+                        .setTitleText("提示")
+                        .setContentText("恢复的数据会把当前应用的数据都覆盖掉，确定要恢复数据吗？")
+                        .setWidth(-2)
+                        .setCancelText("取消")
+                        .setCancelClickListener(new CustomDialog.OnDefaultDialogButtonClickListener() {
                             @Override
-                            public void convertView(ViewHolder holder, final NiceDialog dialog) {
-                                holder.setText(R.id.title, "提示");
-                                holder.setText(R.id.message, "恢复的数据会把当前应用的数据都覆盖掉，确定要恢复数据吗？");
-                                holder.setOnClickListener(R.id.ok, new View.OnClickListener() {
+                            public void onClick(CustomDialog customDialog) {
+                                customDialog.dismiss();
+                            }
+                        })
+                        .setConfirmText("恢复")
+                        .setConfirmClickListener(new CustomDialog.OnDefaultDialogButtonClickListener() {
+                            @Override
+                            public void onClick(CustomDialog customDialog) {
+                                customDialog.dismiss();
+                                new Thread(new Runnable() {
                                     @Override
-                                    public void onClick(View view) {
-                                        dialog.dismiss();
-                                        new Thread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                File file = new File(path);
-                                                FileUtil fileUtil = new FileUtil(getApplicationContext());
-                                                Message message = myHandler.obtainMessage();
-                                                if (file.exists()) {
-                                                    if (fileUtil.restoteDatabase(RecordDao.db_name, path)) {
-                                                        message.obj = "恢复成功！";
-                                                    } else {
-                                                        message.obj = "恢复失败！";
-                                                    }
-                                                } else {
-                                                    message.obj = "文件不存在！";
-                                                }
-                                                message.what = 0x101;
-                                                myHandler.sendMessage(message);
+                                    public void run() {
+                                        File file = new File(path);
+                                        FileUtil fileUtil = new FileUtil(getApplicationContext());
+                                        Message message = myHandler.obtainMessage();
+                                        if (file.exists()) {
+                                            if (fileUtil.restoteDatabase(RecordDao.db_name, path)) {
+                                                message.obj = "恢复成功！";
+                                            } else {
+                                                message.obj = "恢复失败！";
                                             }
-                                        }).start();
+                                        } else {
+                                            message.obj = "文件不存在！";
+                                        }
+                                        message.what = 0x101;
+                                        myHandler.sendMessage(message);
                                     }
-                                });
+                                }).start();
                             }
                         })
                         .show(getSupportFragmentManager());
+
             }
         }
     }

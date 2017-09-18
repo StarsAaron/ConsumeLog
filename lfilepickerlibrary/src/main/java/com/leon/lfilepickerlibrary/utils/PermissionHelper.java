@@ -77,6 +77,10 @@ public class PermissionHelper {
         this.mContext = object;
     }
 
+    public static PermissionHelper getDefault(@NonNull Object object){
+        return new PermissionHelper(object);
+    }
+
     /**
      * 设置请求的权限列表
      *
@@ -188,12 +192,13 @@ public class PermissionHelper {
      * @param okListener
      */
     public void showMessageOKCancel(CharSequence message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(getActivity(mContext))
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity(mContext))
                 .setMessage(message)
                 .setPositiveButton("确定", okListener)
                 .setNegativeButton("取消", null)
-                .create()
-                .show();
+                .create();
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.show();
     }
 
 
@@ -207,7 +212,7 @@ public class PermissionHelper {
                 builder.append(str + "\n");
             }
         }
-        new AlertDialog.Builder(getActivity(mContext))
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity(mContext))
                 .setTitle("权限限制")
                 .setMessage("功能受限了，我们需要开启权限\n" + builder.toString())
                 .setPositiveButton("去开启", new DialogInterface.OnClickListener() {
@@ -223,8 +228,9 @@ public class PermissionHelper {
                         dialog.cancel();
                         getActivity(mContext).finish();
                     }
-                })
-                .show();
+                }).create();
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.show();
     }
 
     /**

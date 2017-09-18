@@ -95,12 +95,34 @@
                     android:id="@+id/et_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp"
                     android:background="#ffffff"
                     android:gravity="top|left"
-                    android:maxHeight="200dp"
-                    android:minHeight="100dp"
+                    android:minHeight="1dp"
                     android:textSize="20dp"/>
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@drawable/divider"
+                    android:visibility="gone"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <GridView
+                        android:id="@+id/gv_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:numColumns="4"
+                        />
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -145,7 +167,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:background="@color/red_ff725f"
+                android:background="@color/red_btn_bg_color"
                 android:text="删除"
                 android:textColor="#ffffff"
                 android:textSize="20dp"

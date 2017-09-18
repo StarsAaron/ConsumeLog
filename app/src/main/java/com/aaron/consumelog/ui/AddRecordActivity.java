@@ -1,28 +1,43 @@
 package com.aaron.consumelog.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aaron.consumelog.R;
+import com.aaron.consumelog.adapter.ImgGridViewAdapter;
 import com.aaron.consumelog.bean.RecordBean;
 import com.aaron.consumelog.db.dao.RecordDao;
-import com.othershe.nicedialog.NiceDialog;
-import com.othershe.nicedialog.ViewConvertListener;
-import com.othershe.nicedialog.ViewHolder;
+import com.aaron.consumelog.util.GetViewSizeUtils;
+import com.aaron.consumelog.util.ImageUtils;
+import com.customdialoglibrary.CustomDialog;
+import com.customdialoglibrary.ViewHolder;
 
+import java.io.File;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.UUID;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -47,17 +62,33 @@ public class AddRecordActivity extends AppCompatActivity {
     Button btnDelete;
     @InjectView(R.id.tv_type)
     TextView etType;
+    @InjectView(R.id.gv_image)
+    GridView mGridView;
 
+    private static final int PHOTO_CAPTURE = 0x11;// 拍照
+    private static final int PHOTO_RESULT = 0x12;// 结果
+    private static final int PHOTO_REQUEST_GALLERY = 0x13;// 相册
+    private static final int SHOWRESULT = 0x101;
+    private static final int SHOWTREATEDIMG = 0x102;
 
     private String chooseConsume = "";
     private boolean isFromEdit = false;//是否来自编辑页面
     private RecordBean recordBean = null;//来自编辑请求的RecordBean
 
     private int mYear, mMonth, mDay;
-
+    private static final String imgFileName = "ConsumeLogImg";//存放图片的文件夹
+    private static String imgFilePath = getSDPath() + File.separator+imgFileName;//存放图片的文件夹路径
+    private String imgFilePathNow;//当前日期的图片文件夹
+    private String cropImgName;//需要裁剪的Img路径
+    private String afterCropImgName;//裁剪后的Img路径
+    
     public enum TYPE {
         T_EDIT, T_ADD
     }
+
+    private List<Bitmap> mDatas;
+    private ImgGridViewAdapter adapter;
+    private File[] fileList;
 
     public static void ToAddRecordActivity(Context context, TYPE type, RecordBean model) {
         Intent intent = new Intent(context, AddRecordActivity.class);
@@ -96,6 +127,7 @@ public class AddRecordActivity extends AppCompatActivity {
 
         etTime.setText(sdf.format(calendar.getTime()));
         recordBean = new RecordBean();//放在前面
+//        recordBean._random_tip = UUID.randomUUID().getLeastSignificantBits();
 
         Intent intent = getIntent();
         switch (intent.getStringExtra("Type")) {
@@ -111,6 +143,143 @@ public class AddRecordActivity extends AppCompatActivity {
                 btnDelete.setVisibility(View.VISIBLE);
                 break;
         }
+        mDatas=new ArrayList<>();
+        imgFilePathNow = imgFilePath+File.separator+etTime.getText().toString();
+        
+//        loadImg();
+    }
+
+    /**
+     * 获取sd卡的路径
+     *
+     * @return 路径的字符串
+     */
+    public static String getSDPath() {
+        File sdDir = null;
+        boolean sdCardExist = Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED); // 判断sd卡是否存在
+        if (sdCardExist) {
+            sdDir = Environment.getExternalStorageDirectory();// 获取外存目录
+        }
+        return sdDir.toString();
+    }
+
+    /**
+     * dp转px
+     *
+     * @param dpValue dp值
+     * @return px值
+     */
+    public int dp2px(final float dpValue) {
+        float scale = getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
+    /**
+     * 加载图片
+     */
+    private void loadImg(){
+        File[] fileList = null;
+        File path = new File(imgFilePathNow);
+        if (!path.exists()) {// 若文件夹不存在 首先创建文件夹
+            path.mkdirs();
+        }else{
+            fileList = path.listFiles();
+        }
+        if(fileList != null && fileList.length!=0){
+            for (File file:fileList) {
+                mDatas.add(ImageUtils.getBitmap(file,dp2px(48),dp2px(48)));
+            }
+        }
+        adapter=new ImgGridViewAdapter(AddRecordActivity.this,mDatas);
+        mGridView.setAdapter(adapter);
+        GetViewSizeUtils.setGridViewHeightBasedOnChildren(mGridView);
+        adapter.notifyDataSetChanged();
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                if(position==parent.getChildCount()-1){
+                    Toast.makeText(AddRecordActivity.this, "您点击了添加", Toast.LENGTH_SHORT).show();
+                    CustomDialog.init(CustomDialog.DialogType.CUSTOM_VIEW_TYPE)
+                            .setLayoutId(R.layout.layout_addpic_menu)
+                            .setConvertListener(new CustomDialog.ViewConvertListener() {
+                                @Override
+                                public void convertView(ViewHolder holder, CustomDialog customDialog) {
+                                    holder.setOnClickListener(R.id.ll_pic_lib, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            Intent intent = new Intent(Intent.ACTION_PICK, null);
+                                            intent.setType("image/*");
+//                                            intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                                            startActivityForResult(intent,PHOTO_REQUEST_GALLERY);
+                                        }
+                                    });
+                                    holder.setOnClickListener(R.id.ll_capture, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            String fileName = createFileName();
+                                            File file = new File(imgFilePath+File.separator+"temp",fileName);
+                                            cropImgName = file.getAbsolutePath();
+                                            afterCropImgName = imgFilePathNow+File.separator+fileName;
+                                            Intent mIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                            mIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+                                            startActivityForResult(mIntent,PHOTO_CAPTURE);
+                                        }
+                                    });
+                                }
+                            })
+                            .setShowBottom(true)
+                            .setAnimStyle(R.style.MyAnimation)
+                            .show(getSupportFragmentManager());
+                }
+            }
+        });
+    }
+
+    /**
+     * 生成唯一图片文件名
+     * @return
+     */
+    private String createFileName(){
+        StringBuilder builder = new StringBuilder();
+//        builder.append(etTime.getText().toString());
+//        builder.append(recordBean._random_tip);
+        builder.append("-"+UUID.randomUUID().toString());
+        builder.append(".jpg");
+        return builder.toString();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_CANCELED)
+            return;
+
+        if (requestCode == PHOTO_CAPTURE) {
+            startPhotoCrop(Uri.fromFile(new File(cropImgName)),Uri.fromFile(new File(afterCropImgName)));
+        }
+
+        if (requestCode == PHOTO_REQUEST_GALLERY) {
+            startPhotoCrop(data.getData(),Uri.fromFile(new File(afterCropImgName)));
+        }
+        loadImg();
+    }
+
+    /**
+     * 调用系统图片编辑进行裁剪
+     */
+    public void startPhotoCrop(Uri in,Uri out) {
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(in, "image/*");
+        intent.putExtra("crop", "true");
+        intent.putExtra("scale", true);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,out);
+        intent.putExtra("return-data", false);
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+        intent.putExtra("noFaceDetection", true); // no face detection
+        startActivityForResult(intent, PHOTO_RESULT);
     }
 
     //来自编辑请求，进行空间数据初始化
@@ -205,42 +374,37 @@ public class AddRecordActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.btn_delete:
-                NiceDialog.init()
-                        .setLayoutId(R.layout.confirm_layout)
+                CustomDialog.init()
+                        .setTitleText("删除")
+                        .setContentText("确定要删除吗?")
                         .setDimAmount(0.3f)
-                        .setMargin(60)
-                        .setOutCancel(false)
-                        .setConvertListener(new ViewConvertListener() {
+                        .setOutCancel(true)
+                        .setCancelText("取消")
+                        .setCancelClickListener(new CustomDialog.OnDefaultDialogButtonClickListener() {
                             @Override
-                            public void convertView(ViewHolder holder, final NiceDialog dialog) {
-                                holder.setText(R.id.title, "删除");
-                                holder.setText(R.id.message, "确定要删除吗？");
-                                holder.setOnClickListener(R.id.cancel, new View.OnClickListener() {
+                            public void onClick(CustomDialog customDialog) {
+                                customDialog.dismiss();
+                            }
+                        })
+                        .setConfirmText("删除")
+                        .setConfirmClickListener(new CustomDialog.OnDefaultDialogButtonClickListener() {
+                            @Override
+                            public void onClick(CustomDialog customDialog) {
+                                customDialog.dismiss();
+                                new Thread(new Runnable() {
                                     @Override
-                                    public void onClick(View v) {
-                                        dialog.dismiss();
+                                    public void run() {
+                                        Looper.prepare();
+                                        RecordDao recordDao = new RecordDao(AddRecordActivity.this);
+                                        if (recordDao.delete(recordBean._id)) {
+                                            showMsg("删除成功！");
+                                            finish();
+                                        } else {
+                                            showMsg("删除失败！");
+                                        }
+                                        Looper.loop();
                                     }
-                                });
-
-                                holder.setOnClickListener(R.id.ok, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        new Thread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Looper.prepare();
-                                                RecordDao recordDao = new RecordDao(AddRecordActivity.this);
-                                                if (recordDao.delete(recordBean._id)) {
-                                                    showMsg("删除成功！");
-                                                    finish();
-                                                } else {
-                                                    showMsg("删除失败！");
-                                                }
-                                                Looper.loop();
-                                            }
-                                        }).start();
-                                    }
-                                });
+                                }).start();
                             }
                         })
                         .show(getSupportFragmentManager());

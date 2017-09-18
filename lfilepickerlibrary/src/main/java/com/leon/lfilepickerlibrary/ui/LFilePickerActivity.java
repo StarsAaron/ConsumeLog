@@ -129,7 +129,7 @@ public class LFilePickerActivity extends AppCompatActivity {
     public void storageAndCallRationale(int code, final Intent intent) {
         switch (code) {
             case WRITE_EXTERNAL_STORAGE_CODE:
-                new AlertDialog.Builder(LFilePickerActivity.this)
+                AlertDialog alertDialog = new AlertDialog.Builder(LFilePickerActivity.this)
                         .setMessage("我们需要您开启读取内部存储权限")
                         .setPositiveButton("去开启", new DialogInterface.OnClickListener() {
                             @Override
@@ -144,7 +144,9 @@ public class LFilePickerActivity extends AppCompatActivity {
                                 finish();
                             }
                         })
-                        .show();
+                        .setCancelable(false).create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
                 break;
         }
     }

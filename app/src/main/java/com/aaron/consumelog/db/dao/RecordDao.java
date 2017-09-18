@@ -48,9 +48,6 @@ public class RecordDao {
         long i = db.insert("Record", null, values);
         db.close();
         if(i!=-1){
-            Intent intent = new Intent();
-            intent.setAction("com.rujian.consumemanager.mydataChangeReceiver.datechange");
-            context.sendBroadcast(intent);
             return true;
         }else{
             return false;

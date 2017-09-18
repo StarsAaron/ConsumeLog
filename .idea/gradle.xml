@@ -10,8 +10,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/calendarlistlibrary" />
+            <option value="$PROJECT_DIR$/customdialoglibrary" />
             <option value="$PROJECT_DIR$/lfilepickerlibrary" />
-            <option value="$PROJECT_DIR$/nicedialog" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
